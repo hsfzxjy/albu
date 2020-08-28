@@ -1,2 +1,2 @@
 # albu
-A nearly-free digital photo album hosted on Tencent COS and Aliyun Lambda.
+A semi-static digital photo album hosted on Tencent COS & Serverless.
