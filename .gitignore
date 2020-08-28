@@ -104,3 +104,10 @@ dist
 .tern-port
 
 .vscode/
+
+__pycache__/
+*.py[co]
+config.json
+.env
+
+assets/

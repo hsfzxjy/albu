@@ -1,0 +1,52 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "node_modules/concurrently/bin/concurrently.js --kill-others \"vue-cli-service serve\" \"node_modules/http-server/bin/http-server ../assets/_generated/ -p 8081 --cors\"",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "deploy": "bash deploy.sh"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "core-js": "^3.6.5",
+    "cos-js-sdk-v5": "^0.5.27",
+    "md5-js": "0.0.3",
+    "moment": "^2.27.0",
+    "node-sass": "^4.14.1",
+    "vue": "^2.6.11"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "babel-eslint": "^10.1.0",
+    "concurrently": "^5.3.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "http-server": "^0.12.3",
+    "node-sass": "^4.14.1",
+    "sass-loader": "^9.0.3",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

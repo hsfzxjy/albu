@@ -11,6 +11,9 @@ from PIL import Image, ExifTags
 import multiprocessing
 from multiprocessing.pool import Pool
 
+from albu_logging import get_logger
+logger = get_logger(__file__)
+
 
 def parse_time(datestr):
     dt = datetime.datetime.strptime(datestr, '%Y:%m:%d %H:%M:%S')
@@ -76,17 +79,17 @@ class Processor:
             local_hasher.update(dest_file_path.read_bytes())
 
             if hasher.digest() == local_hasher.digest():
-                print('Skipping', dest_file_path, '(File unchanged)')
+                logger.info(f'Skipping {dest_file_path} (File unchanged)')
                 return
             else:
-                print(dest_file_path, 'TRUNCATED')
+                logger.info(f'{dest_file_path} TRUNCATED')
 
-        print('Saving', dest_file_path)
+        logger.info(f'Saving {dest_file_path}')
         dest_file_path.write_bytes(buffer.getbuffer())
 
     def save(self):
         for name, img in self.imgs.items():
-            dest_dir = self.file_path.parent.parent / name
+            dest_dir = self.file_path.parent.parent / '_generated' / name
             dest_dir.mkdir(parents=True, exist_ok=True)
             dest_file_path = dest_dir / self.file_path.name
             self._save_file(dest_file_path, img)
@@ -94,21 +97,37 @@ class Processor:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-a',
-                        '--assets-dir',
-                        default=Path('assets/'),
-                        type=Path)
-    parser.add_argument('-q', '--quality', default=85, type=int)
-    parser.add_argument('-p',
-                        '--nproc',
-                        default=multiprocessing.cpu_count(),
-                        type=int)
+    parser.add_argument(
+        '-a',
+        '--assets-dir',
+        default=Path('assets/'),
+        type=Path,
+    )
+    parser.add_argument(
+        '-q',
+        '--quality',
+        default=85,
+        type=int,
+    )
+    parser.add_argument(
+        '-p',
+        '--nproc',
+        default=multiprocessing.cpu_count(),
+        type=int,
+    )
     args = parser.parse_args()
 
     metas = Pool(processes=args.nproc).map(
         Processor.process_and_get_meta,
-        Path(args.assets_dir / 'source').glob('*.jpg'))
-    meta_file_path = args.assets_dir / 'metas.json'
-    print('Saving meta to', meta_file_path)
+        Path(args.assets_dir / 'source').glob('*.jpg'),
+    )
+    meta_file_path = args.assets_dir / '_generated' / 'metas.json'
+    logger.info(f'Saving meta to {meta_file_path}')
     with meta_file_path.open('w') as fd:
         json.dump(metas, fd)
+
+    public_file_path = args.assets_dir / '_generated' / 'public.json'
+    if not public_file_path.exists():
+        logger.info(f'Saving public.json...')
+        with public_file_path.open('w') as fd:
+            json.dump([], fd)
