@@ -5,6 +5,11 @@ if [ "${1}"x != "dry"x ]; then
     npm run build
 fi
 
+if [ ! -d dist/ ]; then
+    echo dist/ not found
+    exit 1
+fi
+
 cd dist/
 find . -maxdepth 1 -mindepth 1 -not -path '*.map' | while read path; do
     path=${path:2}
