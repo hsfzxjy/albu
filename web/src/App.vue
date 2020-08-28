@@ -8,6 +8,15 @@
 <script>
 import Gallery from "@/components/Gallery.vue";
 import Login from "@/components/Login.vue";
+import gallery from "img-vuer";
+import Vue from "vue";
+
+Vue.use(gallery, {
+  swipeThreshold: 150, // default 100
+  isIndexShow: true, // show image index, default true
+  useCloseButton: true, // trigger gallery close with close button, default true
+  preload: true, // preload images in the same group, default true
+});
 
 export default {
   name: "App",

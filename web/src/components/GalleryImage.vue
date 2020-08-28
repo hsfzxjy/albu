@@ -1,7 +1,13 @@
 <template>
   <div class="image-item-wrapper">
     <div :style="style" class="image-item">
-      <img :style="imageStyle" :src="imageURL" v-if="imageURL" @error="refreshURL" />
+      <img
+        v-gallery
+        :style="imageStyle"
+        :src="imageURL"
+        v-if="imageURL"
+        @error="refreshURL"
+      />
     </div>
     <div :class="{ 'selector-wrapper': true, show: editting }" @click="togglePriv">
       <div :class="privClassList"></div>
@@ -69,6 +75,9 @@ export default {
     },
   },
   computed: {
+    galleryGroup() {
+      return this.meta.public ? "public" : "private";
+    },
     privClassList() {
       let result = ["selector"];
       result.push(this.meta.public ? "public" : "private");

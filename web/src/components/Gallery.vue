@@ -1,14 +1,9 @@
 <template>
   <div class="gallery-container">
-    <div class="button-group" v-if="logined">
-      <div class="float-button" @click="editButtonClick">{{editButtonText}}</div>
-      <div class="float-button" @click="resetEditting" v-if="editting && !saving">CANCEL</div>
-    </div>
     <recycle-list
       class="image-list"
       :list="shownList"
       :size="10"
-      ref="recycleList"
       v-if="!invalidating"
     >
       <template slot="item" scope="props">
@@ -32,6 +27,10 @@
         <span>{{indicatorText(props.item)}}</span>
       </template>
     </recycle-list>
+    <div class="button-group" v-if="logined">
+      <div class="float-button" @click="editButtonClick">{{editButtonText}}</div>
+      <div class="float-button" @click="resetEditting" v-if="editting && !saving">CANCEL</div>
+    </div>
   </div>
 </template>
 
@@ -166,7 +165,7 @@ export default {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 10000;
+    // z-index: 10000;
 
     > div.float-button {
       position: static !important;

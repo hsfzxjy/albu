@@ -109,6 +109,10 @@ export default {
   },
   mounted() {
     this.$el.addEventListener("scroll", this.onScroll.bind(this));
+    this.$imgVuer.onIndexChange(() => {
+      // this.start += newVal - oldVal;
+      // this.setScrollTop();
+    });
     overScroll(this.$el);
     this.init();
   },
