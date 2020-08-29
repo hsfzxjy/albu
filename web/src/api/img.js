@@ -56,7 +56,7 @@ export function getObjectUrl(key, isPrivate = true) {
 export async function getMetaList() {
     const [metas, publicNames] = (await Promise.all([
         getPublicResource('assets/metas.json'),
-        getPublicResource('assets/public.json', true)
+        getPublicResource('assets/list/public.json', true)
     ])).map(x => x.data)
 
     return metas.map(x => {
@@ -93,8 +93,9 @@ export async function modifyPriv(actions, publicNames) {
     await COSAction(
         'putObject',
         {
-            Key: `assets/public.json`,
+            Key: `assets/list/public.json`,
             ACL: 'public-read',
+            CacheControl: 'private,max-age=31536000',
             Body: JSON.stringify(publicNames)
         }
     )

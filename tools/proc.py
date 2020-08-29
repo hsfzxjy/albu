@@ -125,9 +125,3 @@ if __name__ == '__main__':
     logger.info(f'Saving meta to {meta_file_path}')
     with meta_file_path.open('w') as fd:
         json.dump(metas, fd)
-
-    public_file_path = args.assets_dir / '_generated' / 'public.json'
-    if not public_file_path.exists():
-        logger.info(f'Saving public.json...')
-        with public_file_path.open('w') as fd:
-            json.dump([], fd)
