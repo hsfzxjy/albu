@@ -3,7 +3,7 @@
     <div ref="list" class="vue-recyclist-items" :style="{height: height + 'px'}">
       <div
         v-for="(item, index) in visibleItems"
-        class="vue-recyclist-item"
+        :class="['vue-recyclist-item', item.data.phantom && 'phantom']"
         :style="{transform: 'translate3d(0,' + item.top + 'px,0)'}"
         :key="item.data.name"
       >
@@ -17,7 +17,7 @@
         <div
           :ref="'item'+index"
           v-for="(item, index) in poolItems"
-          class="vue-recyclist-item vue-recyclist-invisible"
+          :class="['vue-recyclist-item', 'vue-recyclist-invisible', item.data.phantom && 'phantom']"
           :key="item.data.name"
         >
           <slot name="item" :data="item.data" :visible="false"></slot>
@@ -74,6 +74,11 @@ export default {
       start: 0, // Visible items start index
       startOffset: 0, // Start item offset
       scrollingTo: false,
+
+      indexMapping: {
+        d2l: [],
+        l2d: [],
+      },
     };
   },
   computed: {
@@ -117,6 +122,15 @@ export default {
     this.init();
   },
   methods: {
+    updateIndexMapping() {
+      let d2l = [];
+      let l2d = [];
+      for (let i = 0; i < this.list.length; i++) {
+        if (!this.list[i].phantom) d2l.push(i);
+        l2d.push(d2l.length - 1);
+      }
+      this.indexMapping = { d2l, l2d };
+    },
     updateStart(val) {
       this.start = val;
       this.setScrollTop();
@@ -235,6 +249,10 @@ $duration: 500ms;
       position: absolute;
       width: 100%;
       margin-bottom: 1.2em;
+
+      &.phantom {
+        margin: 0;
+      }
       .vue-recyclist-transition {
         position: absolute;
         opacity: 0;

@@ -1,13 +1,10 @@
 <template>
   <div class="gallery-container">
-    <recycle-list
-      class="image-list"
-      :list="shownList"
-      :size="10"
-      v-if="!invalidating"
-    >
+    <recycle-list class="image-list" :list="displayList" :size="10">
       <template slot="item" scope="props">
+        <timestamp v-if="props.data.type === 'timestamp'" :item="props.data" />
         <GalleryImage
+          v-else
           :meta="props.data"
           :baseSize="baseSize"
           :editting="editting"
@@ -39,10 +36,11 @@ import moment from "moment";
 
 import GalleryImage from "./GalleryImage.vue";
 import RecycleList from "./RecycleList";
+import Timestamp from "./Timestamp";
 import * as ImgAPI from "@/api/img";
 
 export default {
-  components: { RecycleList, GalleryImage },
+  components: { RecycleList, GalleryImage, Timestamp },
   name: "Gallery",
   props: {
     logined: {
@@ -55,7 +53,6 @@ export default {
       metaList: [],
       editting: false,
       saving: false,
-      invalidating: false,
       actions: {},
     };
   },
@@ -63,13 +60,54 @@ export default {
     async logined() {},
   },
   computed: {
-    shownList() {
+    visibleMetaList() {
       if (this.logined) return this.metaList;
       else return this.metaList.filter((x) => x.public);
     },
+    displayList() {
+      let result = [];
+      const metaList = this.visibleMetaList;
+      const L = metaList.length;
+      let prevTime = null;
+      let lastTimeStamp = null;
+      for (let i = 0; i < L; i++) {
+        const meta = metaList[i];
+        const time = meta.time;
+        if (!prevTime || time.getFullYear() !== prevTime.getFullYear())
+          result.push({
+            type: "timestamp",
+            time,
+            label: "year",
+            phantom: true,
+          });
+        if (
+          !prevTime ||
+          time.getMonth() !== prevTime.getMonth() ||
+          time.getDate() !== prevTime.getDate()
+        )
+          result.push({
+            type: "timestamp",
+            time,
+            label: "date",
+            phantom: true,
+          });
+        if (!lastTimeStamp || time - lastTimeStamp >= 1000 * 60 * 30) {
+          lastTimeStamp = time;
+          result.push({
+            type: "timestamp",
+            time,
+            label: "time",
+            phantom: true,
+          });
+        }
+        prevTime = time;
+        result.push(meta);
+      }
+      return result;
+    },
     annotationList() {
       if (!this.editting) return [];
-      const lst = this.shownList;
+      const lst = this.visibleMetaList;
       return lst
         .map((item, index) => {
           const modified = this.actions[item.name] !== undefined;

@@ -51,6 +51,11 @@ export default {
 </script>
 
 <style lang="scss">
+@font-face {
+  font-family: aotc;
+  src: url(fonts/aotc.ttf) format("truetype");
+}
+
 html,
 body {
   height: 100%;

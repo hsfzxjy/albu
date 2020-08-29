@@ -6,7 +6,7 @@
       <div class="axis"></div>
       <div class="thumb" :style="thumbStyle">
         <div class="indicator" v-if="touching">
-          <slot name="indicator" :item="list[thumbIndex]"></slot>
+          <slot name="indicator" :item="currentItem"></slot>
         </div>
       </div>
     </div>
@@ -41,30 +41,60 @@ export default {
       thumbIndex: 0,
       touching: false,
       lastTouch: null,
+
+      indexMapping: {
+        d2l: [],
+        d2i: [],
+        l2d: [],
+      },
     };
   },
   watch: {
     index(val) {
       if (val === this.thumbIndex || this.touching) return;
-      const L = this.list.length - 1;
+      val = this.indexMapping.l2d[val];
+      const L = this.indexMapping.d2l.length - 1;
       val = Math.max(0, Math.min(L, val));
       this.thumbFraction = val / L;
       this.thumbIndex = val;
     },
+    list() {
+      this.updateIndexMapping();
+    },
   },
+
   computed: {
     thumbStyle() {
       return {
         top: `${this.thumbFraction * 100}%`,
       };
     },
+    currentItem() {
+      return this.list[this.indexMapping.d2i[this.thumbIndex]];
+    },
   },
   mounted() {
+    this.updateIndexMapping();
     this.initEvents();
   },
   methods: {
+    updateIndexMapping() {
+      let d2l = [];
+      let l2d = [];
+      let d2i = [];
+      let prevNotPhantom = -1;
+      for (let i = 0; i < this.list.length; i++) {
+        l2d.push(d2l.length);
+        if (!this.list[i].phantom) {
+          d2l.push(prevNotPhantom + 1);
+          d2i.push(i);
+          prevNotPhantom = i;
+        }
+      }
+      this.indexMapping = { d2l, l2d, d2i };
+    },
     thumbFractionToIndex(val) {
-      const L = this.list.length;
+      const L = this.indexMapping.d2l.length;
       const margin = 1 / (L - 1);
       let index = Math.floor(val * (L - 1));
       if (val - index * margin > margin / 2) index++;
@@ -103,7 +133,7 @@ export default {
         event.preventDefault();
         this.touching = false;
         this.handleTouchEvent(event);
-        this.$emit("update-index", this.thumbIndex);
+        this.$emit("update-index", this.indexMapping.d2l[this.thumbIndex]);
       });
     },
   },
@@ -124,6 +154,7 @@ export default {
   .start,
   .end {
     font-size: 0.5em;
+    font-family: aotc;
     text-align: center;
   }
 
