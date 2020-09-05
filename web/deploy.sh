@@ -21,4 +21,5 @@ find . -maxdepth 1 -mindepth 1 -not -path '*.map' | while read path; do
     fi
 done
 
+echo 'Granting access...'
 find . -not -path '*.map' -type f -exec coscmd putobjectacl --grant-read anyone {} \;
