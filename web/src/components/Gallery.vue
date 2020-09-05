@@ -8,6 +8,11 @@
           :item="widgetList[props.data.index]||{ empty: true }"
           :index="props.data.index"
           :editting="editting && logined_"
+          :selecting="!logined_ && selecting"
+          :selectStart="selectStart"
+          :selectEnd="selectEnd"
+          @select-start="onSelectStart"
+          @select-end="onSelectEnd"
           @add-msg="addMessage"
           @edit-msg="editMessage"
           @del-msg="deleteMessage"
@@ -37,13 +42,18 @@
       </template>
     </recycle-list>
     <div class="button-group" v-if="logined">
-      <div class="float-button" @click="editButtonClick">{{editButtonText}}</div>
-      <div class="float-button" @click="resetEditting" v-if="editting && !saving">CANCEL</div>
+      <div class="float-button" @click="editButtonClick" v-if="logined_">{{editButtonText}}</div>
+      <div class="float-button" @click="resetEditting" v-if="editting && !saving && logined_">CANCEL</div>
       <div
         class="float-button"
         @click="logined_ = !logined_"
         v-if="editting && !saving"
       >{{ logined_ ? "VIEW PUB" : "VIEW PRI" }}</div>
+      <div
+        class="float-button"
+        @click="selecting = !selecting"
+        v-if="editting && !logined_"
+      >{{ !selecting ? "SHARE" : "CANCEL" }}</div>
     </div>
   </div>
 </template>
@@ -75,11 +85,21 @@ export default {
       actions: {},
       logined_: true,
 
+      selecting: false,
+      selectStart: -Infinity,
+      selectEnd: +Infinity,
+
       messages: {
         list: [],
         public: null,
         private: null,
         modified: false,
+      },
+
+      partial: {
+        start: -Infinity,
+        end: Infinity,
+        enabled: false,
       },
     };
   },
@@ -95,14 +115,27 @@ export default {
       this.$refs.recyclist.start = oldStart;
       await this.$refs.recyclist.setScrollTop();
     },
+    async selecting() {
+      await this.$nextTick();
+      await this.updateRecyclistDom((x) => x.type === "widget");
+    },
   },
   computed: {
     loginedState() {
       return this.logined && this.logined_;
     },
     visibleMetaList() {
-      if (this.loginedState) return this.metaList;
-      else return this.metaList.filter((x) => x.public);
+      let lst;
+      if (this.loginedState) lst = this.metaList;
+      else lst = this.metaList.filter((x) => x.public);
+
+      if (this.partial.enabled) {
+        return lst.filter(
+          (x) => x.time >= this.partial.start && x.time < this.partial.end
+        );
+      }
+
+      return lst;
     },
     displayList() {
       let result = [];
@@ -217,6 +250,28 @@ export default {
     },
   },
   methods: {
+    async promptSelectDialog() {
+      if (!isFinite(this.selectEnd)) return;
+      let { action } = await this.$selectPage.query({
+        selectStart: this.selectStart,
+        selectEnd: this.selectEnd,
+      });
+      if (action === "confirm") {
+        this.selecting = false;
+        this.selectStart = -Infinity;
+        this.selectEnd = +Infinity;
+      }
+    },
+    async onSelectStart(time) {
+      this.selectStart = time;
+      await this.updateRecyclistDom((x) => x.type === "widget");
+      await this.promptSelectDialog();
+    },
+    async onSelectEnd(time) {
+      this.selectEnd = time;
+      await this.updateRecyclistDom((x) => x.type === "widget");
+      await this.promptSelectDialog();
+    },
     handleMessageAdd(widgetIndex, localMsgIndex, msgObject) {
       let msgTime;
       const widget = this.widgetList[widgetIndex];
@@ -431,8 +486,10 @@ export default {
         };
         while (i_msg < L_msg && msgList[i_msg].data.time <= curTime) {
           if (
-            this.loginedState ||
-            (!this.loginedState && msgList[i_msg].public)
+            (this.loginedState ||
+              (!this.loginedState && msgList[i_msg].public)) &&
+            msgList[i_msg].data.time >= this.partial.start &&
+            msgList[i_msg].data.time < this.partial.end
           )
             widget.list.push(msgList[i_msg]);
           i_msg++;
@@ -539,8 +596,26 @@ export default {
     refresh() {
       this.$set("metaList", this.metaList);
     },
+
+    parseHash() {
+      let decoded;
+      try {
+        decoded = JSON.parse(window.atob(location.hash.slice(1)));
+      } catch (e) {
+        console.log(e);
+        return;
+      }
+      this.partial.enabled = true;
+      let [start, end, title] = decoded;
+      this.partial.start = start;
+      this.partial.end = end;
+      if (title) {
+        document.title = title + " | " + document.title;
+      }
+    },
   },
   async mounted() {
+    this.parseHash();
     this.metaList = (await API.getMetaList()).sort((a, b) => a.time - b.time);
     await this.$nextTick();
     await this.loadMessages();

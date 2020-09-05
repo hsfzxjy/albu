@@ -91,7 +91,7 @@ export default {
       }
       let right = this.start;
       counter = this.size;
-      while (right < this.list.length - 1 && counter > 0) {
+      while (right < this.list.length && counter > 0) {
         if (!this.list[right].phantom) counter--;
         right++;
       }

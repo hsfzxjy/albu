@@ -5,34 +5,37 @@
         <div :class="{ 'selector-wrapper': true, show: editting }" @click="togglePriv(msg)">
           <div :class="privClassList(localIndex)"></div>
         </div>
-        <div class="button-group">
+        <div class="button-group" v-if="editting && item.widgetTime">
           <div class="push-right">
+            <div class="button float-button" @click="add(localIndex)">ADD</div>
+            <div class="button float-button" @click="edit(localIndex)">EDIT</div>
+            <div class="button float-button" @click="remove(localIndex)">DEL</div>
             <div
               class="button float-button"
-              v-if="editting && item.widgetTime"
-              @click="add(localIndex)"
-            >ADD</div>
-            <div
-              class="button float-button"
-              v-if="editting && item.widgetTime"
-              @click="edit(localIndex)"
-            >EDIT</div>
-            <div
-              class="button float-button"
-              v-if="editting && item.widgetTime"
-              @click="remove(localIndex)"
-            >DEL</div>
-            <div
-              class="button float-button"
-              v-if="editting && item.widgetTime && !(index === 0 && localIndex === 0)"
+              v-if="!(index === 0 && localIndex === 0)"
               @click="moveUp(localIndex)"
             >UP</div>
             <div
               class="button float-button"
-              v-if="editting && item.widgetTime && !(item.backward && localIndex === item.list.length - 1)"
+              v-if="!(item.backward && localIndex === item.list.length - 1)"
               @click="moveDown(localIndex)"
             >DOWN</div>
           </div>
+        </div>
+
+        <div class="button-group center" v-if="selecting">
+          <div
+            class="button float-button"
+            @click="onSelectStart(localIndex)"
+            v-if="canStartHere(localIndex, selectStart, selectEnd)"
+          >START FROM HERE</div>
+          <div
+            class="button float-button"
+            @click="onSelectEnd(localIndex)"
+            v-if="canFinishHere(localIndex, selectStart, selectEnd)"
+          >FINISH</div>
+          <span class="select-indicator" v-if="selectedTime(localIndex) === selectStart">STARTED FROM HERE</span>
+          <span class="select-indicator" v-if="selectedTime(localIndex) === selectEnd">FINISHED AT HERE</span>
         </div>
 
         <div :class="'content ' + msg.data.style">
@@ -40,20 +43,32 @@
         </div>
       </div>
 
-      <div class="button-group center" style="margin: 0 10%;">
+      <div class="button-group center" style="margin: 0 10%;" v-if="editting && item.widgetTime">
+        <div class="button float-button" @click="add(item.list.length)">ADD</div>
+      </div>
+
+      <div class="button-group center" v-if="selecting" style="margin: 0 10%;">
         <div
           class="button float-button"
-          v-if="editting && item.widgetTime"
-          @click="add(item.list.length)"
-        >ADD</div>
+          @click="onSelectStart(item.list.length)"
+          v-if="canStartHere(item.list.length, selectStart, selectEnd)"
+        >START FROM HERE</div>
+        <div
+          class="button float-button"
+          @click="onSelectEnd(item.list.length)"
+          v-if="canFinishHere(item.list.length, selectStart, selectEnd)"
+        >FINISH</div>
+
+        <span class="select-indicator" v-if="selectedTime(item.list.length) === selectStart">STARTED FROM HERE</span>
+        <span class="select-indicator" v-if="selectedTime(item.list.length) === selectEnd">FINISHED AT HERE</span>
       </div>
     </div>
   </div>
 </template>
 <script>
-import EditPage from "./editPage";
+import Dialog from "./dialog";
 import Vue from "vue";
-Vue.use(EditPage);
+Vue.use(Dialog);
 
 export default {
   name: "Widget",
@@ -70,6 +85,18 @@ export default {
       type: Boolean,
       required: true,
     },
+    selecting: {
+      type: Boolean,
+      required: true,
+    },
+    selectStart: {
+      type: Number,
+      required: true,
+    },
+    selectEnd: {
+      type: Number,
+      required: true,
+    },
   },
   data() {
     return {
@@ -79,7 +106,7 @@ export default {
   computed: {
     classList() {
       let result = ["widget-container"];
-      if (this.editting) result.push("editting");
+      if (this.editting || this.selecting) result.push("editting");
       return result;
     },
 
@@ -91,6 +118,51 @@ export default {
     },
   },
   methods: {
+    canFinishHere(localId, selectStart, selectEnd) {
+      const time = this.selectedTime(localId);
+      const firstTime = this.item.list.length
+        ? this.item.list[0].data.time
+        : +Infinity;
+
+      let condition =
+        isFinite(selectStart) &&
+        time > selectStart &&
+        time !== selectEnd &&
+        selectStart < firstTime;
+      // console.log(this.index, condition, time);
+      return condition;
+    },
+    canStartHere(localId, selectStart, selectEnd) {
+      const time = this.selectedTime(localId);
+      return time < selectEnd && time !== selectStart && !this.item.backward;
+    },
+    selectedTime(localMsgIndex) {
+      let time;
+
+      if (this.item.backward) {
+        if (!this.item.list.length) {
+          time = this.item.widgetTime + 1;
+        } else if (localMsgIndex < this.item.list.length) {
+          time = this.item.list[localMsgIndex];
+        } else {
+          time = this.item.list[localMsgIndex - 1] + 1;
+        }
+      } else {
+        if (localMsgIndex < this.item.list.length) {
+          time = this.item.list[localMsgIndex].data.time;
+        } else {
+          time = this.item.widgetTime;
+        }
+      }
+
+      return time;
+    },
+    onSelectStart(localMsgIndex) {
+      this.$emit("select-start", this.selectedTime(localMsgIndex));
+    },
+    onSelectEnd(localMsgIndex) {
+      this.$emit("select-end", this.selectedTime(localMsgIndex));
+    },
     togglePriv(msg) {
       this.$emit("priv-changed", msg);
     },
@@ -108,24 +180,23 @@ export default {
     },
     async add(localMsgIndex) {
       let msg = this.defaultMessage();
-      const { action } = await this.$editPage.query(
-        msg,
-        this.messageStyleChoices
-      );
+      let styleChoices = this.messageStyleChoices;
+      const { action } = await this.$editPage.query({ msg, styleChoices });
       if (action === "confirm")
         this.$emit("add-msg", this.index, localMsgIndex, msg);
     },
     async edit(localMsgIndex) {
       let msg = { ...this.item.list[localMsgIndex].data };
-      const { action } = await this.$editPage.query(
-        msg,
-        this.messageStyleChoices
-      );
+      let styleChoices = this.messageStyleChoices;
+
+      const { action } = await this.$editPage.query({ msg, styleChoices });
       if (action === "confirm")
         this.$emit("edit-msg", localMsgIndex, this.index, msg);
     },
     remove(localMsgIndex) {
-      this.$emit("del-msg", this.index, localMsgIndex);
+      if (window.confirm("确定要删除吗？")) {
+        this.$emit("del-msg", this.index, localMsgIndex);
+      }
     },
     async moveUp(localMsgIndex) {
       this.$emit("move-up-msg", this.index, localMsgIndex);
@@ -195,9 +266,6 @@ export default {
     background-color: red;
   }
 
-  &.editting .button-group {
-    border-top: #777 dashed 1px;
-  }
   .message {
     position: relative;
     width: 80%;
@@ -251,6 +319,11 @@ export default {
       }
     }
   }
+
+  &.editting .button-group {
+    border-top: #777 dashed 1px;
+  }
+
   .button-group {
     font-size: 0.75em;
     display: flex;
@@ -275,6 +348,11 @@ export default {
       .button {
         margin: 0 0 0 5px !important;
       }
+    }
+
+    .select-indicator {
+      padding: 10px;
+      color: rgb(255, 97, 97);
     }
   }
 }

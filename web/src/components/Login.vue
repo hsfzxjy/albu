@@ -3,12 +3,13 @@
     <Unlocker @matched="onMatched" v-if="show" />
     <div class="close-button" @click="toggle()">&times;</div>
     <div
-      :class="['login-button', 'float-button', this.show || this.logined ? 'hide' : 'show']"
+      :class="['login-button', 'float-button', this.show || this.logined || hasHash ? 'hide' : 'show']"
       @click="toggle()"
     >LOGIN</div>
     <div class="footer">
       Powered by
-      <a target="_blank" href="https://github.com/hsfzxjy/albu">hsfzxjy/albu</a>.<br>
+      <a target="_blank" href="https://github.com/hsfzxjy/albu">hsfzxjy/albu</a>.
+      <br />
       Copyright &copy; {{ new Date().getFullYear() }} hsfzxjy.
     </div>
   </div>
@@ -33,6 +34,9 @@ export default {
   computed: {
     classList() {
       return ["login", this.show && !this.logined ? "show" : "hide"];
+    },
+    hasHash() {
+      return window.location.hash.length >= 2;
     },
   },
   methods: {
@@ -106,7 +110,7 @@ export default {
     text-align: center;
 
     a {
-      color:teal;
+      color: teal;
       text-decoration: none;
     }
   }
