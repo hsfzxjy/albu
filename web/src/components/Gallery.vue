@@ -7,7 +7,7 @@
           v-else-if="props.data.type === 'widget'"
           :item="widgetList[props.data.index]||{ empty: true }"
           :index="props.data.index"
-          :editting="editting"
+          :editting="editting && logined_"
           @add-msg="addMessage"
           @edit-msg="editMessage"
           @del-msg="deleteMessage"
@@ -19,7 +19,7 @@
           v-else
           :meta="props.data"
           :baseSize="baseSize"
-          :editting="editting"
+          :editting="editting && logined_"
           :logined="loginedState"
           @priv-changed="onPrivChanged"
         />
@@ -84,7 +84,7 @@ export default {
     };
   },
   watch: {
-    async logined() {
+    async loginedState() {
       await this.$nextTick();
       await this.loadMessages();
     },
@@ -157,11 +157,11 @@ export default {
       return result;
     },
     annotationList() {
-      if (!this.widgetList.length) return [];
       const lst = this.visibleMetaList;
+      if (this.widgetList.length !== lst.length + 1) return [];
 
       let result = [];
-      if (!this.editting)
+      if (!this.editting || !this.logined_)
         result = lst.map((_, index) => {
           let milestone = false;
           if (this.widgetList[index]) {
@@ -430,7 +430,12 @@ export default {
           prevMsgIndex: i_msg - 1,
         };
         while (i_msg < L_msg && msgList[i_msg].data.time <= curTime) {
-          widget.list.push(msgList[i_msg++]);
+          if (
+            this.loginedState ||
+            (!this.loginedState && msgList[i_msg].public)
+          )
+            widget.list.push(msgList[i_msg]);
+          i_msg++;
         }
         widgetList.push(widget);
       }
