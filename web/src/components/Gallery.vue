@@ -596,7 +596,7 @@ export default {
       border-color: #999;
       border-style: dashed;
       height: 0;
-      border-top: 1px;
+      border-width: 1px 0 0 0;
     }
 
     &.public:before {
