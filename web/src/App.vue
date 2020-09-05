@@ -45,6 +45,7 @@ export default {
     },
   },
   mounted() {
+    document.querySelector(".splash").remove();
     this.initEvents();
   },
 };

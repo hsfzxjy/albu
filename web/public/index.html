@@ -1,17 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="<%= BASE_URL %>favico.png" type="image/png">
-    <title>Memory of wcc & xjy</title>
-  </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but this site doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" href="<%= BASE_URL %>favico.png" type="image/png">
+  <title>Memory of wcc & xjy</title>
+</head>
+
+<body>
+  <noscript>
+    <strong>We're sorry but this site doesn't work properly without JavaScript enabled. Please enable it to
+      continue.</strong>
+  </noscript>
+  <div id="app"></div>
+  <div class="splash">
+    <img src="<%= BASE_URL %>favico.png" alt="">
+    <div class="text">Loading...</div>
+  </div>
+
+  <style>
+    html,
+    body {
+      padding: 0;
+      margin: 0%;
+      position: relative;
+      height: 100%;
+    }
+
+    @keyframes bounce {
+      from {
+        transform: translateY(0px);
+      }
+
+      to {
+        transform: translateY(-15px);
+      }
+    }
+
+    @-webkit-keyframes bounce {
+      from {
+        transform: translateY(0px);
+      }
+
+      to {
+        transform: translateY(-15px);
+      }
+    }
+
+    .splash {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-content: center;
+      justify-content: center;
+    }
+
+    .splash img {
+      height: 192px;
+      width: 192px;
+      height: 30vw;
+      width: 30vw;
+      margin: 0 auto;
+
+      animation: bounce .5s infinite alternate;
+      -webkit-animation: bounce .5s infinite alternate;
+    }
+
+    .splash div.text {
+      font-family: serif;
+      font-size: 40px;
+      font-size: 8vw;
+      text-align: center;
+    }
+  </style>
+
+  <!-- built files will be auto injected -->
+</body>
+
 </html>
