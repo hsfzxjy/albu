@@ -13,7 +13,7 @@ import Vue from "vue";
 
 Vue.use(gallery, {
   swipeThreshold: 150, // default 100
-  isIndexShow: true, // show image index, default true
+  isIndexShow: false, // show image index, default true
   useCloseButton: true, // trigger gallery close with close button, default true
   preload: true, // preload images in the same group, default true
 });
@@ -45,7 +45,6 @@ export default {
     },
   },
   mounted() {
-    document.querySelector(".splash").remove();
     this.initEvents();
   },
 };

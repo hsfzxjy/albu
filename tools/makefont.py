@@ -14,6 +14,21 @@ WORK_DIR = ROOT_DIR / 'web' / 'src' / 'fonts'
 
 PUNCTUATION = list('，。？“”—《》「」『』！（）')
 ASCII = list(chr(id) for id in range(0x0, 0x7F))
+FALLBACK_FONTS = [
+    "SimSun",
+    "宋体",
+    "system-ui",
+    "-apple-system",
+    "BlinkMacSystemFont",
+    "segoe ui",
+    "Roboto",
+    "Helvetica",
+    "Arial",
+    "sans-serif",
+    "apple color emoji",
+    "segoe ui emoji",
+    "segoe ui symbol",
+]
 
 
 def unicode_to_hex(char):
@@ -64,9 +79,10 @@ def main(args):
 
         start += chunk_size
 
+    font_list = ", ".join(f'"{x}"' for x in font_families + FALLBACK_FONTS)
     font_class = f"""
     .custom-font {{
-        font-family: {', '.join(font_families)}, "SimSun", "宋体" !important;
+        font-family: {font_list} !important;
     }}
     """
 

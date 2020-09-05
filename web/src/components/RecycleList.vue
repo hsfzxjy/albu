@@ -83,10 +83,20 @@ export default {
   },
   computed: {
     visibleItems() {
-      return this.items.slice(
-        Math.max(0, this.start - this.size),
-        Math.min(this.items.length, this.start + this.size)
-      );
+      let left = this.start,
+        counter = this.size;
+      while (left > 0 && counter > 0) {
+        if (!this.list[left].phantom) counter--;
+        left--;
+      }
+      let right = this.start;
+      counter = this.size;
+      while (right < this.list.length - 1 && counter > 0) {
+        if (!this.list[right].phantom) counter--;
+        right++;
+      }
+
+      return this.items.slice(left, right);
     },
     poolItems() {
       const result = this.items

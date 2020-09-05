@@ -20,7 +20,7 @@
           :meta="props.data"
           :baseSize="baseSize"
           :editting="editting"
-          :logined="logined"
+          :logined="loginedState"
           @priv-changed="onPrivChanged"
         />
       </template>
@@ -39,6 +39,11 @@
     <div class="button-group" v-if="logined">
       <div class="float-button" @click="editButtonClick">{{editButtonText}}</div>
       <div class="float-button" @click="resetEditting" v-if="editting && !saving">CANCEL</div>
+      <div
+        class="float-button"
+        @click="logined_ = !logined_"
+        v-if="editting && !saving"
+      >{{ logined_ ? "VIEW PUB" : "VIEW PRI" }}</div>
     </div>
   </div>
 </template>
@@ -68,6 +73,7 @@ export default {
       editting: false,
       saving: false,
       actions: {},
+      logined_: true,
 
       messages: {
         list: [],
@@ -84,17 +90,18 @@ export default {
     },
     async editting() {
       const oldStart = this.$refs.recyclist.start;
-      console.log(oldStart);
       await this.updateRecyclistDom((x) => x.type === "widget");
       await this.$nextTick();
       this.$refs.recyclist.start = oldStart;
       await this.$refs.recyclist.setScrollTop();
-      // await this.$refs.recyclist.scrollTo((x) => x.index === oldStart, 0, 0);
     },
   },
   computed: {
+    loginedState() {
+      return this.logined && this.logined_;
+    },
     visibleMetaList() {
-      if (this.logined) return this.metaList;
+      if (this.loginedState) return this.metaList;
       else return this.metaList.filter((x) => x.public);
     },
     displayList() {
@@ -436,7 +443,6 @@ export default {
       if (!item) return;
       let msg = moment(item.time).format("YYYY年MM月DD日 HH:mm:ss");
       const widget = this.widgetList[index];
-      console.log(index);
       let milestones = [];
       if (widget) {
         milestones = widget.list
@@ -458,6 +464,7 @@ export default {
     resetEditting() {
       this.$set(this, "actions", {});
       this.saving = this.editting = false;
+      this.logined_ = true;
     },
     merge(a, b, key) {
       let result = [];
@@ -532,6 +539,9 @@ export default {
     this.metaList = (await API.getMetaList()).sort((a, b) => a.time - b.time);
     await this.$nextTick();
     await this.loadMessages();
+
+    const $splash = document.querySelector(".splash");
+    if ($splash) $splash.remove();
   },
 };
 </script>
