@@ -11,7 +11,7 @@ from PIL import Image, ExifTags
 import multiprocessing
 from multiprocessing.pool import Pool
 
-from albu_logging import get_logger
+from albu_tools_utils import get_logger
 logger = get_logger(__file__)
 
 
@@ -26,11 +26,13 @@ class Processor:
     @classmethod
     def process_and_get_meta(cls, file_path):
         processor = cls(file_path)
-        processor.save()
+        if processor.meta is not None:
+            processor.save()
         return processor.meta
 
     def __init__(self, file_path):
         self.file_path = file_path
+        self.meta = None
         self.open_image()
 
     def resize(self, image, bbox=None):
@@ -44,11 +46,16 @@ class Processor:
         image = Image.open(str(self.file_path))
 
         exif = image._getexif()
+        if exif is None or 0x0132 not in exif:
+            logger.error(f'{self.file_path} SKIPPED: Time not found in EXIF')
+            return
         time = parse_time(exif[0x0132])
-        orientation = exif[0x0112]
-        degree = {3: 180, 6: 270, 8: 90}.get(orientation)
-        if degree is not None:
-            image = image.rotate(degree, expand=True)
+
+        if 0x112 in exif:
+            orientation = exif[0x0112]
+            degree = {3: 180, 6: 270, 8: 90}.get(orientation)
+            if degree is not None:
+                image = image.rotate(degree, expand=True)
 
         meta = {
             'hw': [image.height, image.width],
@@ -59,8 +66,8 @@ class Processor:
         imgs = {}
         for name, bbox in [
             ['s', [800, 800]],
-            ['m', [1600, 1600]],
-            ['l', [2400, 2400]],
+            # ['m', [1600, 1600]],
+            # ['l', [2400, 2400]],
             ['ori', None],
         ]:
             imgs[name] = self.resize(image, bbox)
@@ -84,7 +91,7 @@ class Processor:
             else:
                 logger.info(f'{dest_file_path} TRUNCATED')
 
-        logger.info(f'Saving {dest_file_path}')
+        logger.info(f'Saving {dest_file_path} [{self.meta["time"]}]')
         dest_file_path.write_bytes(buffer.getbuffer())
 
     def save(self):
@@ -112,7 +119,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-p',
         '--nproc',
-        default=multiprocessing.cpu_count(),
+        default=multiprocessing.cpu_count() // 2,
         type=int,
     )
     args = parser.parse_args()
@@ -122,6 +129,9 @@ if __name__ == '__main__':
         Path(args.assets_dir / 'source').glob('*.jpg'),
     )
     meta_file_path = args.assets_dir / '_generated' / 'metas.json'
+    logger.info(f'{len(metas)} photos processed')
     logger.info(f'Saving meta to {meta_file_path}')
+    metas = sorted([meta for meta in metas if meta is not None],
+                   key=lambda x: x['time'])
     with meta_file_path.open('w') as fd:
         json.dump(metas, fd)

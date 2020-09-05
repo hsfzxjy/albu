@@ -2,7 +2,7 @@
   <canvas ref="canvas"></canvas>
 </template>
 <script>
-import * as sts from "@/api/sts";
+import * as API from "@/api";
 
 export default {
   data() {
@@ -149,7 +149,7 @@ export default {
     },
     async checkPassword() {
       try {
-        this.$emit("matched", await sts.login(this.pointLine.join("")));
+        this.$emit("matched", await API.login(this.pointLine.join("")));
       } catch (e) {
         this.selectColor = this.errorColor;
         this.draw();

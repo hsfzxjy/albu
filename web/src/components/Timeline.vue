@@ -6,7 +6,7 @@
       <div class="axis"></div>
       <div class="thumb" :style="thumbStyle">
         <div class="indicator" v-if="touching">
-          <slot name="indicator" :item="currentItem"></slot>
+          <slot name="indicator" :item="currentItem" :index="thumbIndex"></slot>
         </div>
       </div>
     </div>
@@ -170,32 +170,12 @@ export default {
     flex-grow: 1;
     position: relative;
     .thumb {
-      background-color: black;
-      // border: transparent 3px solid;
-      // width: 1;
       height: 1px;
       position: absolute;
-      left: 5%;
-      right: 5%;
       top: 0%;
-
-      &::before,
-      &::after {
-        content: " ";
-        position: absolute;
-        height: 3px;
-        width: 3px;
-        background-color: #fdfdfd;
-        left: 49%;
-        right: 49%;
-      }
-
-      &::before {
-        top: -3px;
-      }
-      &::after {
-        bottom: -3px;
-      }
+      left: 15%;
+      right: 15%;
+      background-color: black;
 
       .indicator {
         position: absolute;
@@ -215,7 +195,6 @@ export default {
       }
     }
     .axis {
-      width: 0px;
       // background-color: black;
       border-width: 0 1px;
       border-style: solid;

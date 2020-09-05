@@ -6,6 +6,11 @@
       :class="['login-button', 'float-button', this.show || this.logined ? 'hide' : 'show']"
       @click="toggle()"
     >LOGIN</div>
+    <div class="footer">
+      Powered by
+      <a target="_blank" href="https://github.com/hsfzxjy/albu">hsfzxjy/albu</a>.<br>
+      Copyright &copy; {{ new Date().getFullYear() }} hsfzxjy.
+    </div>
   </div>
 </template>
 
@@ -89,6 +94,21 @@ export default {
   }
   &.hide .close-button {
     display: none;
+  }
+
+  .footer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px;
+    padding-bottom: 30px;
+    text-align: center;
+
+    a {
+      color:teal;
+      text-decoration: none;
+    }
   }
 }
 </style>

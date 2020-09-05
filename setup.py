@@ -26,7 +26,13 @@ if __name__ == '__main__':
         root_dir / 'auth' / '.env',
     )
     dump_env(
-        {f'VUE_APP_{key}': value
-         for key, value in config_content['cos'].items()},
+        {
+            f'VUE_APP_{key}': value
+            for key, value in config_content['cos'].items()
+        },
         root_dir / 'web' / '.env',
     )
+
+    font_css_file = root_dir / 'web' / 'src' / 'fonts' / 'custom.scss'
+    if not font_css_file.exists():
+        font_css_file.write_text('')

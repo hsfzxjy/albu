@@ -4,12 +4,14 @@ import os
 import json
 import argparse
 from pathlib import Path
+from functools import partial
 from subprocess import Popen, PIPE, DEVNULL
 
 from qcloud_cos import CosConfig, CosS3Client
 
-from albu_logging import get_logger
+from albu_tools_utils import get_logger, execute as _execute
 logger = get_logger(__file__)
+execute = partial(_execute, logger=logger)
 
 ROOT_DIR = Path(__file__).absolute().parent.parent
 os.chdir(ROOT_DIR)
@@ -46,17 +48,6 @@ def fix_acl(img_dirs=['s']):
 def get_config():
     with (ROOT_DIR / 'config.json').open() as fd:
         return json.load(fd)
-
-
-def execute(args, inputs=None):
-    logger.info(f'EXECUTING [{" ".join(args)}]')
-    p = Popen(args, stdin=PIPE if inputs is not None else None, stdout=DEVNULL)
-    if inputs is not None:
-        for input in inputs:
-            p.communicate(bytes(input, encoding='utf-8'))
-    else:
-        p.wait()
-    return p.returncode
 
 
 def sync_list():

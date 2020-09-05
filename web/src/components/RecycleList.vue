@@ -15,22 +15,22 @@
       <!--get tombstone and item heights from these invisible doms-->
       <div class="vue-recyclist-pool">
         <div
-          :ref="'item'+index"
-          v-for="(item, index) in poolItems"
-          :class="['vue-recyclist-item', 'vue-recyclist-invisible', item.data.phantom && 'phantom']"
-          :key="item.data.name"
+          :ref="'item'+item[1]"
+          v-for="item in poolItems"
+          :class="['vue-recyclist-item', 'vue-recyclist-invisible', item[0].data.phantom && 'phantom']"
+          :key="item[0].data.name+item[0].data.type+item[1]"
         >
-          <slot name="item" :data="item.data" :visible="false"></slot>
+          <slot name="item" :data="item[0].data" :visible="false"></slot>
         </div>
       </div>
     </div>
 
-    <timeline :index="start" :list="list" @update-index="updateStart">
+    <timeline :index="start" :list="list" @update-index="updateStart" ref="timeline">
       <template slot="annotation">
         <slot name="annotation"></slot>
       </template>
       <template slot="indicator" scope="props">
-        <slot name="indicator" :item="props.item"></slot>
+        <slot name="indicator" :item="props.item" :index="props.index"></slot>
       </template>
     </timeline>
   </div>
@@ -89,7 +89,10 @@ export default {
       );
     },
     poolItems() {
-      return this.items.filter((item) => !item.height);
+      const result = this.items
+        .map((x, i) => [x, i])
+        .filter((x) => !x[0].height);
+      return result;
     },
   },
   props: {
@@ -172,11 +175,42 @@ export default {
         top: -1000,
       });
     },
+    async refreshDOM(predicate) {
+      const reloads = [];
+      for (let i = 0; i < this.list.length; i++) {
+        if (predicate(this.list[i]))
+          reloads.push(
+            (async (i) => {
+              this.items[i].height = 0;
+              await this.$nextTick();
+              this.updateItemHeight(i);
+            })(i)
+          );
+      }
+      await Promise.all(reloads);
+      this.updateItemTop();
+    },
     updateItemHeight(index) {
       // update item height
       let cur = this.items[index];
       let dom = this.$refs["item" + index];
       cur.height = outerHeight(dom[0]);
+    },
+    async scrollTo(predicate, offsetElement, offsetScreen) {
+      let target = -1;
+      for (let i = 0; i < this.items.length; i++) {
+        if (predicate(this.list[i])) {
+          target = i;
+          break;
+        }
+      }
+      if (target < 0) return;
+      const offset =
+        offsetElement * this.items[target].height +
+        offsetScreen * this.$el.offsetHeight;
+      this.startOffset = -offset;
+      this.start = target;
+      await this.setScrollTop();
     },
     updateItemTop() {
       // loop all items to update item top and list height
@@ -202,12 +236,11 @@ export default {
         }
       }
     },
-    setScrollTop() {
+    async setScrollTop() {
       if (this.items[this.start]) {
-        this.$nextTick(() => {
-          this.scrollingTo = true;
-          this.$el.scrollTop = this.items[this.start].top - this.startOffset;
-        });
+        await this.$nextTick();
+        this.scrollingTo = true;
+        this.$el.scrollTop = this.items[this.start].top - this.startOffset;
         // reset start item offset
         this.startOffset = 0;
       }

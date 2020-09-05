@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { getImageURL } from "@/api/img";
+import { getImageURL } from "@/api";
 
 function random(a, b) {
   return (b - a) * Math.random() + a;
@@ -43,7 +43,7 @@ export default {
   data() {
     return {
       ratios: {
-        longSide: random(0.85, 0.85),
+        longSide: 0.8,
         translateX: random(0.5, 0.5),
         rotation: parseInt(random(-5, 5)) % 360,
       },

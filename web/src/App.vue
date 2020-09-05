@@ -56,13 +56,19 @@ export default {
   src: url(fonts/aotc.ttf) format("truetype");
 }
 
+* {
+  font-size: 16px;
+  font-size: 4vw;
+}
+
 html,
 body {
   height: 100%;
   padding: 0;
   margin: 0;
   background-color: #fdfdfd;
-  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Inter", Tahoma, Helvetica, Arial, "Microsoft Yahei", "微软雅黑",
+    STXihei, "华文细黑", sans-serif;
 }
 #app {
   height: 100%;

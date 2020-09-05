@@ -16,7 +16,7 @@ class QImageViewer(QMainWindow):
     def __init__(self, args):
         super().__init__()
         self.args = args
-        self.fileList = glob(args.src, recursive=True)
+        self.fileList = sorted(glob(args.src, recursive=True))
         self.index = 0
 
         self.scaleFactor = 0.0
