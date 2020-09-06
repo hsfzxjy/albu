@@ -11,6 +11,8 @@ import Login from "@/components/Login.vue";
 import gallery from "img-vuer";
 import Vue from "vue";
 
+import initWX from "@/api/wx";
+
 Vue.use(gallery, {
   swipeThreshold: 150, // default 100
   isIndexShow: false, // show image index, default true
@@ -44,8 +46,9 @@ export default {
       );
     },
   },
-  mounted() {
+  async mounted() {
     this.initEvents();
+    await initWX();
   },
 };
 </script>

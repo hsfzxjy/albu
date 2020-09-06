@@ -27,8 +27,14 @@ if __name__ == '__main__':
     )
     dump_env(
         {
-            f'VUE_APP_{key}': value
-            for key, value in config_content['cos'].items()
+            **{
+                f'VUE_APP_{key}': value
+                for key, value in config_content['cos'].items()
+            },
+            **{
+                f'VUE_APP_WX_{key}': value
+                for key, value in config_content['wx'].items()
+            },
         },
         root_dir / 'web' / '.env',
     )

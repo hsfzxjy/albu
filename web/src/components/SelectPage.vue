@@ -8,9 +8,7 @@
 
         <div class="button-group">
           <div class="button confirm" @click="copyLink">复制链接</div>
-          <div class="button confirm">
-            <a :href="url" target="_blank">新窗口查看链接</a>
-          </div>
+          <div class="button confirm" @click="openInNew">新窗口查看链接</div>
         </div>
         <div class="button-group" style="margin-top:10px">
           <div class="button cancel" @click="reselect">重新选择</div>
@@ -63,13 +61,16 @@ export default {
       return (
         window.location.href.replace(/#.*/, "") +
         "#" +
-        btoa(JSON.stringify(payload))
+        btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
       );
     },
   },
   methods: {
     dismiss() {
       this.show = false;
+    },
+    openInNew() {
+      window.open(this.url, "_blank");
     },
     close() {
       this.dismiss();

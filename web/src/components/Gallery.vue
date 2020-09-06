@@ -600,7 +600,9 @@ export default {
     parseHash() {
       let decoded;
       try {
-        decoded = JSON.parse(window.atob(location.hash.slice(1)));
+        decoded = JSON.parse(
+          decodeURIComponent(escape(window.atob(location.hash.slice(1))))
+        );
       } catch (e) {
         console.log(e);
         return;

@@ -3,8 +3,9 @@ const cors = require('cors')
 const crypto = require('crypto');
 const config = require('./config.json');
 const getCredential = require('qcloud-cos-sts').getCredential;
+const axios = require('axios');
 
-function getPayload(data) {
+function encodePayload(data) {
   const algorithm = 'aes-192-cbc';
   const key = crypto.scryptSync(config.secret, 'salt', 24)
   const iv = Buffer.alloc(16, 0);
@@ -19,10 +20,7 @@ function getPayload(data) {
       }
     })
     cipher.on('end', () => {
-      resolve({
-        data: data,
-        token: result.join('')
-      })
+      resolve(result.join(''))
     })
 
     cipher.write(JSON.stringify(data))
@@ -46,10 +44,11 @@ function decodePayload(token) {
       }
     })
     decipher.on('end', () => {
-      resolve({
-        data: JSON.parse(decrypted.join('')),
-        token: token
-      })
+      try {
+        resolve(JSON.parse(decrypted.join('')))
+      } catch (e) {
+        resolve(undefined)
+      }
     })
 
     decipher.write(token, 'hex')
@@ -116,10 +115,7 @@ async function handleBody(body) {
   if (!isPasswordMatched(body.password))
     return { 'error': 'password mismatched' }
 
-  if (body.token === undefined)
-    return getPayload(await getCOSCredential())
-  else
-    return decodePayload(body.token)
+  return { data: await getCOSCredential() }
 }
 
 const app = express()
@@ -140,6 +136,64 @@ app.use(function (req, res, next) {
 // Routes
 app.post(`/`, (req, res) => {
   handleBody(req.rawBody)
+    .then(result => res.json(result))
+})
+
+async function wxSign(body) {
+  let { url, payload } = body;
+  if (!url) { return { 'error': 'empty url' } }
+
+  if (payload) payload = await decodePayload(payload)
+  if (!payload || payload.expiration < +new Date()) {
+    let { access_token } = (await axios.request({
+      url: 'https://api.weixin.qq.com/cgi-bin/token',
+      params: {
+        grant_type: "client_credential",
+        appid: config.wx.appId,
+        secret: config.wx.appSecret,
+      }
+    })).data;
+    if (!access_token) return { 'error': 'bad token' }
+
+    let { ticket } = (await axios.request({
+      url: 'https://api.weixin.qq.com/cgi-bin/ticket/getticket',
+      params: {
+        access_token,
+        type: 'jsapi'
+      }
+    })).data;
+
+    if (!ticket) return { 'error': 'bad ticket' }
+    let expiration = +new Date() + 7200 * 1000;
+
+    payload = { ticket, expiration }
+  }
+  console.log(payload)
+
+  const nonceStr = Math.random().toString();
+  const timestamp = Math.floor(+new Date() / 1000);
+
+  const stringToSign = `jsapi_ticket=${payload.ticket}&noncestr=${nonceStr}&timestamp=${timestamp}&url=${url}`
+
+  let sha1sum = crypto.createHash('sha1')
+  sha1sum.update(stringToSign)
+  let signature = sha1sum.digest('hex')
+
+  return {
+    payload: await encodePayload(payload),
+    signature,
+    nonceStr,
+    timestamp
+  }
+}
+
+app.post(`/wx`, (req, res) => {
+  let body = {}
+  try {
+    body = JSON.parse(req.rawBody)
+  } catch (e) { }
+
+  wxSign(body)
     .then(result => res.json(result))
 })
 
