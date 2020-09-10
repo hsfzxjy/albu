@@ -84,7 +84,7 @@ cd auth/
 serverless deploy
 ```
 
-After done, the console will print out a URL like `https://service-xxxxxxxx-1254463987.gz.apigw.tencentcs.com/release/`, which is the link to the backend. Please fill `authURL` in `config.json` with this URL.
+After done, the console will print out a URL like `https://service-xxxxxxxx-1254463987.gz.apigw.tencentcs.com/release/`, which is the link to the backend. Please fill `web.authURL` in `config.json` with this URL.
 
 ### Deploy Web Pages
 
@@ -96,4 +96,6 @@ npm install
 npm run deploy
 ```
 
-**albu** allows you to customize the Chinese font of Remarks and Milestones. Simply place your font under `web/src/fonts/` and rename to `custom.ttf`. Run `tools/makefont.py` to chunkize the font and generate corresponding SCSS code.
+To customize the Chinese font of Remarks and Milestones, simply place your font under `web/src/fonts/` and rename to `custom.ttf`. Run `tools/makefont.py` to chunkize the font and generate corresponding SCSS code.
+
+To customize favico and Wechat sharing cover, simply overwrite `favico.png` and `wx_cover.png` under `web/public/`.
