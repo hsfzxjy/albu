@@ -1,0 +1,5 @@
+Pillow==7.0.0
+fonttools==4.14.0
+cos-python-sdk-v5==1.8.4
+coscmd==1.8.6.17
+PyQt5==5.15.0
