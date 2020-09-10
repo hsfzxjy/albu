@@ -18,17 +18,19 @@ os.chdir(ROOT_DIR)
 
 
 def get_cos_client():
-    cfg = get_config()['cos']
-    config = CosConfig(Region=cfg['region'],
-                       SecretId=cfg['secretId'],
-                       SecretKey=cfg['secretKey'],
-                       Scheme='https')
+    cfg = get_config()
+    config = CosConfig(
+        Region=cfg['cos']['region'],
+        SecretId=cfg['tcloud']['secretId'],
+        SecretKey=cfg['tcloud']['secretKey'],
+        Scheme='https',
+    )
     client = CosS3Client(config)
-    client.bucket = cfg['bucket']
+    client.bucket = cfg['cos']['bucket']
     return client
 
 
-def fix_acl(img_dirs=['s']):
+def fix_acl(img_dirs=['xs', 's']):
     with (ROOT_DIR / 'assets' / '_generated' / 'list' /
           'public.json').open() as fd:
         public_list = set(json.load(fd))
@@ -108,9 +110,9 @@ def main():
         'coscmd',
         'config',
         '-a',
-        config['cos']['secretId'],
+        config['tcloud']['secretId'],
         '-s',
-        config['cos']['secretKey'],
+        config['tcloud']['secretKey'],
         '-b',
         config['cos']['bucket'],
         '-r',
@@ -145,7 +147,7 @@ if __name__ == '__main__':
     parser.add_argument('--img-dirs',
                         '-i',
                         nargs='+',
-                        default=['s', 'm', 'l', 'ori'])
+                        default=['xs', 's', 'ori'])
     parser.add_argument('--fix-acl', '-fa', action='store_true')
     cli_args = parser.parse_args()
     main()

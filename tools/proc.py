@@ -65,9 +65,10 @@ class Processor:
 
         imgs = {}
         for name, bbox in [
+            ['xs', [10, 10]],
             ['s', [800, 800]],
-            # ['m', [1600, 1600]],
-            # ['l', [2400, 2400]],
+                # ['m', [1600, 1600]],
+                # ['l', [2400, 2400]],
             ['ori', None],
         ]:
             imgs[name] = self.resize(image, bbox)
