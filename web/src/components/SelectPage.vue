@@ -21,6 +21,9 @@
 <script>
 import moment from "moment";
 
+import { isWechat, updateShareInfo } from "@/api/wx";
+import { getShareURL } from "@/api/sharing";
+
 export default {
   name: "SelectPage",
   props: {
@@ -42,13 +45,19 @@ export default {
         this.title = "";
         await this.$nextTick();
         this.$refs.textarea.focus();
+        await updateShareInfo(this.title, this.url);
       }
+    },
+    async title(val) {
+      await this.$nextTick();
+      await updateShareInfo(val, this.url);
     },
   },
   computed: {
     rangeText() {
       const formatter = "YYYY年MM月DD日 HH:mm:ss,SSS";
       return [
+        isWechat() ? "<b>点击右上角分享</b><br>" : "",
         moment(this.selectStart).format(formatter),
         "<br>",
         "~",
@@ -57,12 +66,7 @@ export default {
       ].join("");
     },
     url() {
-      const payload = [this.selectStart, this.selectEnd, this.title];
-      return (
-        window.location.href.replace(/#.*/, "") +
-        "#" +
-        btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
-      );
+      return getShareURL(this.selectStart, this.selectEnd, this.title);
     },
   },
   methods: {

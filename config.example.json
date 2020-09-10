@@ -1,0 +1,21 @@
+{
+    "tcloud": {
+        "appId": "",
+        "secretId": "",
+        "secretKey": ""
+    },
+    "cos": {
+        "bucket": "",
+        "region": ""
+    },
+    "secret": "",
+    "passwords": [],
+    "web": {
+        "authURL": "",
+        "title": "Albu Photo Gallery"
+    },
+    "wx": {
+        "appId": "",
+        "appSecret": ""
+    }
+}

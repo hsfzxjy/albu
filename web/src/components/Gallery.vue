@@ -20,6 +20,7 @@
           @move-down-msg="moveDownMessage"
           @priv-changed="togglePrivMessage"
         />
+        <Copyright v-else-if="props.data.type === 'copyright'" :bottom="false" />
         <GalleryImage
           v-else
           :meta="props.data"
@@ -64,11 +65,13 @@ import moment from "moment";
 import GalleryImage from "./GalleryImage.vue";
 import RecycleList from "./RecycleList";
 import Timestamp from "./Timestamp";
+import Copyright from "./Copyright";
 import Widget from "./Widget";
 import * as API from "@/api";
+import * as sharing from "@/api/sharing";
 
 export default {
-  components: { RecycleList, GalleryImage, Timestamp, Widget },
+  components: { RecycleList, GalleryImage, Timestamp, Widget, Copyright },
   name: "Gallery",
   props: {
     logined: {
@@ -186,6 +189,13 @@ export default {
         phantom: true,
         index: L,
       });
+
+      if (!this.loginedState && L > 0) {
+        result.push({
+          type: "copyright",
+          phantom: true,
+        });
+      }
 
       return result;
     },
@@ -598,21 +608,14 @@ export default {
     },
 
     parseHash() {
-      let decoded;
-      try {
-        decoded = JSON.parse(
-          decodeURIComponent(escape(window.atob(location.hash.slice(1))))
-        );
-      } catch (e) {
-        console.log(e);
-        return;
-      }
+      let decoded = sharing.decodeShareURL();
+      if (!decoded) return;
+
       this.partial.enabled = true;
-      let [start, end, title] = decoded;
-      this.partial.start = start;
-      this.partial.end = end;
-      if (title) {
-        document.title = title + " | " + document.title;
+      this.partial.start = decoded.start;
+      this.partial.end = decoded.end;
+      if (decoded.title) {
+        document.title = decoded.title + " | " + process.env.VUE_APP_WEB_TITLE;
       }
     },
   },

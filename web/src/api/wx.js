@@ -1,21 +1,22 @@
 'use strict';
 
 import axios from 'axios'
+import { decodeShareURL } from './sharing'
 
 const signClient = axios.create({
-    baseURL: process.env.VUE_APP_authURL + 'wx'
+    baseURL: process.env.VUE_APP_WEB_AUTHURL + 'wx'
 })
 
 
-function isWechat() {
+export function isWechat() {
     let ua = navigator.userAgent.toLowerCase();
     return ua.match(/MicroMessenger/i) == "micromessenger"
 }
 
-export default async function initWX() {
+export async function initWX() {
     if (!isWechat()) return
     const wx = await import("weixin-js-sdk")
-    const url = process.env.VUE_APP_WX_url
+    const url = location.href.split('#')[0]
     let requestBody = { url }
 
     let wxPayload = localStorage.getItem("wxPayload")
@@ -27,7 +28,7 @@ export default async function initWX() {
 
     wx.config({
         debug: false,
-        appId: process.env.VUE_APP_WX_appId,
+        appId: process.env.VUE_APP_WX_APPID,
         signature,
         timestamp,
         nonceStr,
@@ -49,14 +50,35 @@ export default async function initWX() {
             title: document.title
         })
 
-        let title = document.title, desc
-        let splitted = title.split(' | ')
-        if (splitted.length >= 2) {
-            title = splitted.slice(-1)[0]
-            desc = splitted[0]
+        let title = process.env.VUE_APP_WEB_TITLE, desc = decodeShareURL(false)
+
+        if (desc) {
+            [title, desc] = [desc, title]
         }
         wx.updateAppMessageShareData({
             ...commonData, title, desc
+        })
+    })
+}
+
+export async function updateShareInfo(desc, link) {
+    const wx = await import("weixin-js-sdk");
+    const url = location.href.split('#')[0]
+
+    wx.ready(() => {
+        const commonData = {
+            link,
+            imgUrl: `${url}wx_cover.png`,
+        }
+        const title = process.env.VUE_APP_WEB_TITLE
+        wx.updateTimelineShareData({
+            ...commonData,
+            title: desc ? desc + ' | ' + title : title,
+        })
+        wx.updateAppMessageShareData({
+            ...commonData,
+            title: desc ? desc : title,
+            desc: desc ? title : undefined
         })
     })
 }

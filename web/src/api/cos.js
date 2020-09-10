@@ -5,8 +5,8 @@ import { stsToken } from './sts'
 import COS from 'cos-js-sdk-v5'
 
 const bucketInfo = {
-    Bucket: process.env.VUE_APP_bucket,
-    Region: process.env.VUE_APP_region,
+    Bucket: process.env.VUE_APP_COS_BUCKET,
+    Region: process.env.VUE_APP_COS_REGION,
 }
 
 export function getPublicURL(key) {

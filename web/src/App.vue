@@ -11,7 +11,7 @@ import Login from "@/components/Login.vue";
 import gallery from "img-vuer";
 import Vue from "vue";
 
-import initWX from "@/api/wx";
+import { initWX } from "@/api/wx";
 
 Vue.use(gallery, {
   swipeThreshold: 150, // default 100

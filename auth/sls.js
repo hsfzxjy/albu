@@ -70,8 +70,8 @@ function isPasswordMatched(password) {
 
 async function getCOSCredential() {
   const arguments = {
-    secretId: config.cos.secretId,
-    secretKey: config.cos.secretKey,
+    secretId: config.tcloud.secretId,
+    secretKey: config.tcloud.secretKey,
     bucket: config.cos.bucket,
     region: config.cos.region,
     policy: {
@@ -85,7 +85,7 @@ async function getCOSCredential() {
           'name/cos:PutObject',
         ],
         "principal": { "qcs": ["*"] },
-        "resource": [`qcs::cos:ap-nanjing:uid/${config.cos.appId}:${config.cos.bucket}/*`]
+        "resource": [`qcs::cos:ap-nanjing:uid/${config.tcloud.appId}:${config.cos.bucket}/*`]
       }]
     },
   }
@@ -168,7 +168,6 @@ async function wxSign(body) {
 
     payload = { ticket, expiration }
   }
-  console.log(payload)
 
   const nonceStr = Math.random().toString();
   const timestamp = Math.floor(+new Date() / 1000);

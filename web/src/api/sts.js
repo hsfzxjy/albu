@@ -5,7 +5,7 @@ import { CachedValue } from './cache'
 import Deferred from './deferred'
 
 const stsAPIClient = axios.create({
-    baseURL: process.env.VUE_APP_authURL
+    baseURL: process.env.VUE_APP_WEB_AUTHURL
 })
 
 const stsDeferred = new Deferred();
