@@ -283,9 +283,9 @@ export default {
 
         pre {
           padding: 0 6.25%;
-          font-size: 2em !important;
+          font-size: 1.8em !important;
           font-weight: 500 !important;
-          line-height: 1.3em;
+          line-height: 1em;
         }
       }
 
