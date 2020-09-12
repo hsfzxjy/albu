@@ -12,6 +12,7 @@ import gallery from "img-vuer";
 import Vue from "vue";
 
 import { initWX } from "@/api/wx";
+import { login } from "@/api";
 
 Vue.use(gallery, {
   swipeThreshold: 150, // default 100
@@ -25,7 +26,7 @@ export default {
   components: { Gallery, Login },
   data() {
     return {
-      logined: false,
+      logined: !!process.env.VUE_APP_LOGINED,
     };
   },
   methods: {
@@ -49,6 +50,11 @@ export default {
   async mounted() {
     this.initEvents();
     await initWX();
+
+    if (process.env.VUE_APP_LOGINED) {
+      const password = eval(process.env.VUE_APP_PASSWORDS)[0];
+      login(password);
+    }
   },
 };
 </script>

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
+    "logined": "vue-cli-service serve --mode logined",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "deploy": "bash deploy.sh"
