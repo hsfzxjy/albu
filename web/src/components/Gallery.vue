@@ -508,6 +508,8 @@ export default {
       }
       this.$set(this, "widgetList", widgetList);
       await this.$nextTick();
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      await new Promise((resolve) => setTimeout(() => resolve(), 1000));
       await this.updateRecyclistDom((x) => x.type === "widget");
     },
 
