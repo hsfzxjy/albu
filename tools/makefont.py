@@ -12,7 +12,7 @@ logger = get_logger(__file__)
 ROOT_DIR = Path(__file__).absolute().parent.parent
 WORK_DIR = ROOT_DIR / 'web' / 'src' / 'fonts'
 
-PUNCTUATION = list('，。？“”—《》「」『』！（）')
+PUNCTUATION = list(':：;；·*～，。？“”—《》「」『』！（）')
 ASCII = list(chr(id) for id in range(0x0, 0x7F))
 FALLBACK_FONTS = [
     "SimSun",
