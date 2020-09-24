@@ -1,5 +1,5 @@
 export function getShareURL(start, end, title) {
-    const payload = [start, end, title];
+    const payload = [start, end, title, Math.random().toString().slice(0, 4)];
     return (
         window.location.href.replace(/#.*/, "") +
         "#" +
@@ -17,6 +17,6 @@ export function decodeShareURL(ret_fake = false) {
         console.log(e);
         return ret_fake ? {} : null;
     }
-    const [start, end, title] = decoded;
-    return { start, end, title }
+    const [start, end, title, seed] = decoded;
+    return { start, end, title, seed }
 }

@@ -68,7 +68,7 @@ export async function updateShareInfo(desc, link) {
     wx.ready(() => {
         const commonData = {
             link,
-            imgUrl: `${url}wx_cover.png`,
+            imgUrl: `${url}wx_cover.jpg`,
         }
         const title = process.env.VUE_APP_WEB_TITLE
         wx.updateTimelineShareData({
